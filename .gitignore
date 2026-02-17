@@ -1,0 +1,9 @@
+.venv/
+.env
+*.pyc
+__pycache__/
+.superhero_cache.json
+db.sqlite3
+staticfiles/
+DEPLOY.md
+render.yaml
