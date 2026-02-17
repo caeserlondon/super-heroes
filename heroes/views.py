@@ -4,11 +4,24 @@ Views for the Super Heroes UI.
 All data is fetched via the superhero_api client, which uses the cache layer
 so repeated requests do not hit the API unnecessarily.
 """
+from pathlib import Path
+
+from django.http import FileResponse, Http404
 from django.shortcuts import render
 
 from superhero_api import SuperheroAPIClient, hero_image_url
 
 from heroes.superhero_cache import get_superhero_cache
+
+# Favicon path (works even when static files aren't collected)
+FAVICON_PATH = Path(__file__).resolve().parent / "static" / "heroes" / "favicon.png"
+
+
+def favicon(request):
+    """Serve the favicon so it works without relying on static file finders."""
+    if not FAVICON_PATH.exists():
+        raise Http404()
+    return FileResponse(FAVICON_PATH.open("rb"), content_type="image/png")
 
 
 def _safe_int(value):

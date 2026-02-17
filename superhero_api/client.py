@@ -227,30 +227,15 @@ class SuperheroAPIClient:
     def get_hero_list(self, id_range: range | None = None) -> list[dict[str, Any]]:
         """
         Return a list of heroes with at least id, name, and appearance.
-        Uses cache; on miss, uses API (with token) or fallback dataset (no token).
-        id_range: used only when using official API (default 1..100).
+        Uses cache; on miss, fetches from the CDN (one fast request) so the list
+        page loads quickly. Per-hero details still use the API when token is set.
         """
         cached_list = self.cache.get_hero_list()
         if cached_list is not None:
             return cached_list
-        if not self.token:
-            return self._fetch_all_fallback()
-        if id_range is None:
-            id_range = range(1, 101)
-        heroes = []
-        for i in id_range:
-            char = self.get_character(i)
-            if not char:
-                continue
-            hero = {
-                "id": char.get("id"),
-                "name": char.get("name", "Unknown"),
-                "appearance": char.get("appearance") or {},
-            }
-            heroes.append(hero)
-        if heroes:
-            self.cache.set_hero_list(heroes)
-        return heroes
+        # Always use single-request CDN for the list so the page doesn't hang
+        # (using the API would require 100+ sequential requests on first load)
+        return self._fetch_all_fallback()
 
 
 def get_client(token: str | None = None) -> SuperheroAPIClient:

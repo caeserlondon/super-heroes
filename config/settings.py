@@ -18,7 +18,12 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "dev-secret-change-in-productio
 DEBUG = os.environ.get("DEBUG", "1") == "1"
 
 # Allow host from env for production (e.g. .onrender.com, .pythonanywhere.com)
-ALLOWED_HOSTS = [h.strip() for h in os.environ.get("ALLOWED_HOSTS", "*").split(",")]
+ALLOWED_HOSTS = [h.strip() for h in os.environ.get("ALLOWED_HOSTS", "*").split(",") if h.strip()]
+# So local runserver works: allow 127.0.0.1 and localhost if not already in list
+if "*" not in ALLOWED_HOSTS:
+    for host in ("127.0.0.1", "localhost"):
+        if host not in ALLOWED_HOSTS:
+            ALLOWED_HOSTS.append(host)
 
 INSTALLED_APPS = [
     "django.contrib.contenttypes",
@@ -54,8 +59,8 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = "static/"
-STATICFILES_DIRS = [] if not (BASE_DIR / "static").exists() else [BASE_DIR / "static"]
+STATIC_URL = "/static/"
+STATICFILES_DIRS = [BASE_DIR / "static"] if (BASE_DIR / "static").exists() else []
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
