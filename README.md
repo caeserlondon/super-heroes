@@ -2,6 +2,8 @@
 
 A small Python project that integrates with the [Superhero API](https://superheroapi.com/), caches responses, and provides a Django UI to browse superheroes and their appearance details.
 
+### [Live on https://caeserlondon.pythonanywhere.com/](https://caeserlondon.pythonanywhere.com)
+
 ## Features
 
 - **API integration**: Fetches superhero data (name and appearance) from the Superhero API. If `SUPERHERO_API_TOKEN` is not set, the app falls back to the same dataset from [akabab/superhero-api](https://github.com/akabab/superhero-api) so it runs without a token.
@@ -14,11 +16,13 @@ A small Python project that integrates with the [Superhero API](https://superher
 ## Setup
 
 1. **Clone and enter the project**
+
    ```bash
-   cd super-heros
+   cd super-heroes
    ```
 
 2. **Create a virtual environment and install dependencies**
+
    ```bash
    python3 -m venv .venv
    source .venv/bin/activate   # On Windows: .venv\Scripts\activate
@@ -27,9 +31,9 @@ A small Python project that integrates with the [Superhero API](https://superher
 
 3. **Superhero API token**  
    For the official API, get a token at [superheroapi.com](https://superheroapi.com/) (GitHub login). Then either:
-   - Create a `.env` file in the project root (copy from `.env.example`) and set `SUPERHERO_API_TOKEN=your-token`, or  
+   - Create a `.env` file in the project root (copy from `.env.example`) and set `SUPERHERO_API_TOKEN=your-token`, or
    - Run `export SUPERHERO_API_TOKEN=your-token` in your shell.  
-   Without a token, the app uses the fallback dataset and still works.
+     Without a token, the app uses the fallback dataset and still works.
 
 ## Run
 
@@ -38,13 +42,6 @@ python manage.py runserver
 ```
 
 Open [http://127.0.0.1:8000/](http://127.0.0.1:8000/) in your browser. The first load may take a few seconds while data is fetched and cached; later requests are served from the cache.
-
-## Deploy online (free)
-
-- **PythonAnywhere (no card required):** see **[PYTHONANYWHERE.md](PYTHONANYWHERE.md)** for step-by-step deploy. Your link will be `https://yourusername.pythonanywhere.com`.
-- Other options (Render, Railway, etc.): see [DEPLOY.md](DEPLOY.md).
-
-## Project layout
 
 - **`superhero_api/`** – API client (and optional file cache for non-Django use):
   - `client.py`: `SuperheroAPIClient` (list, character, appearance, biography, powerstats) and `hero_image_url()`.
