@@ -1,0 +1,9 @@
+{% extends "heroes/base.html" %}
+
+{% block title %}Hero not found{% endblock %}
+
+{% block content %}
+  <a href="{% url 'hero_list' %}" class="back">← Back to list</a>
+  <h1>Hero not found</h1>
+  <p>No hero with ID {{ hero_id }} could be loaded.</p>
+{% endblock %}

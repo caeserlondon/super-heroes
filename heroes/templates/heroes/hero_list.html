@@ -1,0 +1,99 @@
+{% extends "heroes/base.html" %}
+
+{% block title %}Super Heroes – List{% endblock %}
+
+{% block extra_css %}
+<style>
+  .hero-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 0.75rem;
+  }
+  @media (min-width: 1680px) {
+    .hero-grid {
+      grid-template-columns: repeat(5, 1fr);
+    }
+  }
+  .hero-card {
+    background: var(--card);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 2px solid var(--border-silver);
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  }
+  .hero-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.35);
+    border-color: var(--border-yellow);
+  }
+  .hero-card a { display: block; color: inherit; text-decoration: none; }
+  .hero-card a:hover { text-decoration: none; }
+  .hero-card img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    background: var(--bg);
+  }
+  .hero-card .info { padding: 1rem 1.25rem; }
+  .hero-card .name {
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 0.25rem;
+  }
+  .hero-card .race {
+    font-size: 0.875rem;
+    color: var(--muted);
+  }
+  .hero-card.hidden { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+  <p class="muted" style="color: var(--muted); margin-bottom: 1.5rem;">Select a hero to view appearance details.</p>
+
+  <div class="hero-grid" id="hero-grid">
+    {% for hero in heroes %}
+      <div class="hero-card" data-name="{{ hero.name|lower }}" data-race="{{ hero.race|default:''|lower }}">
+        <a href="{% url 'hero_detail' hero.id %}">
+          <img src="{{ hero.image_url }}" alt="{{ hero.name }}" loading="lazy" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%231a1923%22 width=%22100%22 height=%22100%22/><text x=%2250%22 y=%2255%22 text-anchor=%22middle%22 fill=%22%238b8792%22 font-size=%2212%22>No image</text></svg>'">
+          <div class="info">
+            <div class="name">{{ hero.name }}</div>
+            <div class="race">{{ hero.race|default:"—" }}</div>
+          </div>
+        </a>
+      </div>
+    {% empty %}
+      <p>No heroes loaded. Set SUPERHERO_API_TOKEN or check your connection.</p>
+    {% endfor %}
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+  var search = document.getElementById('hero-search');
+  var grid = document.getElementById('hero-grid');
+  var countEl = document.getElementById('hero-count');
+  if (!search || !grid) return;
+  var cards = grid.querySelectorAll('.hero-card');
+  var total = cards.length;
+
+  function updateCount(visible) {
+    if (countEl) countEl.textContent = visible + ' heroes';
+  }
+
+  search.addEventListener('input', function() {
+    var q = (this.value || '').trim().toLowerCase();
+    var visible = 0;
+    cards.forEach(function(card) {
+      var name = (card.getAttribute('data-name') || '');
+      var race = (card.getAttribute('data-race') || '');
+      var match = !q || name.indexOf(q) !== -1 || race.indexOf(q) !== -1;
+      card.classList.toggle('hidden', !match);
+      if (match) visible++;
+    });
+    updateCount(visible);
+  });
+})();
+</script>
+{% endblock %}

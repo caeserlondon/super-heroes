@@ -1,0 +1,368 @@
+{% extends "heroes/base.html" %}
+
+{% block title %}{{ hero.name }} – Details{% endblock %}
+
+{% block extra_css %}
+<style>
+  .hero-header {
+    margin-bottom: 2rem;
+  }
+  .hero-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem;
+    background: linear-gradient(135deg, #fff 0%, #eab308 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero-subtitle {
+    color: var(--muted);
+    font-size: 1.1rem;
+  }
+  .hero-content {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 2.5rem;
+    margin-top: 2rem;
+  }
+  @media (max-width: 768px) {
+    .hero-content {
+      grid-template-columns: 1fr;
+    }
+  }
+  .hero-image-wrap {
+    position: sticky;
+    top: 1.5rem;
+    align-self: start;
+  }
+  .hero-image-wrap img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 16px;
+    border: 2px solid var(--border-silver);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  .hero-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+  .info-section {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .info-section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 1.25rem;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .info-section-title::before {
+    content: '';
+    width: 4px;
+    height: 1.25rem;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+  .info-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.75rem 1.5rem;
+  }
+  .info-label {
+    color: var(--muted);
+    font-weight: 500;
+    font-size: 0.9rem;
+    min-width: 140px;
+  }
+  .info-value {
+    color: var(--text);
+    word-break: break-word;
+  }
+  .info-value:empty::after {
+    content: '—';
+    color: var(--muted);
+  }
+  .aliases-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .aliases-list li {
+    background: rgba(124, 58, 237, 0.15);
+    color: var(--accent);
+    padding: 0.35rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    border: 1px solid rgba(124, 58, 237, 0.3);
+  }
+  .alignment-badge {
+    display: inline-block;
+    padding: 0.4rem 0.9rem;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .alignment-good {
+    background: rgba(34, 197, 94, 0.15);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+  }
+  .alignment-bad {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+  }
+  .alignment-neutral {
+    background: rgba(156, 163, 175, 0.15);
+    color: #9ca3af;
+    border: 1px solid rgba(156, 163, 175, 0.3);
+  }
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    color: var(--muted);
+    transition: color 0.2s;
+  }
+  .back-link:hover {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .powerstats-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+  .powerstat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .powerstat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .powerstat-label {
+    font-weight: 600;
+    color: var(--text);
+    text-transform: capitalize;
+  }
+  .powerstat-value {
+    font-weight: 700;
+    color: var(--accent);
+    font-size: 1.1rem;
+  }
+  .powerstat-bar {
+    height: 10px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 5px;
+    overflow: hidden;
+    position: relative;
+  }
+  .powerstat-fill {
+    height: 100%;
+    border-radius: 5px;
+    transition: width 0.6s ease-out;
+    box-shadow: 0 0 8px rgba(124, 58, 237, 0.4);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+  <a href="{% url 'hero_list' %}" class="back-link">← Back to list</a>
+  
+  <div class="hero-header">
+    <h1 class="hero-title">{{ hero.name }}</h1>
+    {% if hero.full_name %}
+    <p class="hero-subtitle">{{ hero.full_name }}</p>
+    {% endif %}
+  </div>
+
+  <div class="hero-content">
+    <div class="hero-image-wrap">
+      <img src="{{ hero.image_url }}" alt="{{ hero.name }}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%231a1923%22 width=%22100%22 height=%22100%22/><text x=%2250%22 y=%2255%22 text-anchor=%22middle%22 fill=%22%238b8792%22 font-size=%2212%22>No image</text></svg>'">
+    </div>
+
+    <div class="hero-info">
+      <!-- Biography Section -->
+      <div class="info-section">
+        <h2 class="info-section-title">Biography</h2>
+        <div class="info-grid">
+          {% if hero.full_name %}
+          <div class="info-label">Full Name</div>
+          <div class="info-value">{{ hero.full_name }}</div>
+          {% endif %}
+          
+          {% if hero.alter_egos and hero.alter_egos != "No alter egos found." %}
+          <div class="info-label">Alter Egos</div>
+          <div class="info-value">{{ hero.alter_egos }}</div>
+          {% endif %}
+          
+          {% if hero.aliases %}
+          <div class="info-label">Aliases</div>
+          <div class="info-value">
+            <ul class="aliases-list">
+              {% for alias in hero.aliases %}
+                <li>{{ alias }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+          {% endif %}
+          
+          {% if hero.place_of_birth %}
+          <div class="info-label">Place of Birth</div>
+          <div class="info-value">{{ hero.place_of_birth }}</div>
+          {% endif %}
+          
+          {% if hero.first_appearance %}
+          <div class="info-label">First Appearance</div>
+          <div class="info-value">{{ hero.first_appearance }}</div>
+          {% endif %}
+          
+          {% if hero.publisher %}
+          <div class="info-label">Publisher</div>
+          <div class="info-value">{{ hero.publisher }}</div>
+          {% endif %}
+          
+          {% if hero.alignment %}
+          <div class="info-label">Alignment</div>
+          <div class="info-value">
+            <span class="alignment-badge alignment-{{ hero.alignment|lower }}">{{ hero.alignment }}</span>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Appearance Section -->
+      <div class="info-section">
+        <h2 class="info-section-title">Appearance</h2>
+        <div class="info-grid">
+          {% if hero.gender %}
+          <div class="info-label">Gender</div>
+          <div class="info-value">{{ hero.gender }}</div>
+          {% endif %}
+          
+          {% if hero.race %}
+          <div class="info-label">Race</div>
+          <div class="info-value">{{ hero.race }}</div>
+          {% endif %}
+          
+          {% if hero.height %}
+          <div class="info-label">Height</div>
+          <div class="info-value">{{ hero.height|join:" / " }}</div>
+          {% endif %}
+          
+          {% if hero.weight %}
+          <div class="info-label">Weight</div>
+          <div class="info-value">{{ hero.weight|join:" / " }}</div>
+          {% endif %}
+          
+          {% if hero.eye_color %}
+          <div class="info-label">Eye Colour</div>
+          <div class="info-value">{{ hero.eye_color }}</div>
+          {% endif %}
+          
+          {% if hero.hair_color %}
+          <div class="info-label">Hair Colour</div>
+          <div class="info-value">{{ hero.hair_color }}</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Powerstats Section - At the bottom -->
+      {% if hero.intelligence or hero.strength or hero.speed or hero.durability or hero.power or hero.combat %}
+      <div class="info-section">
+        <h2 class="info-section-title">Powerstats</h2>
+        <div class="powerstats-grid">
+          {% if hero.intelligence %}
+          <div class="powerstat-item">
+            <div class="powerstat-header">
+              <span class="powerstat-label">Intelligence</span>
+              <span class="powerstat-value">{{ hero.intelligence }}</span>
+            </div>
+            <div class="powerstat-bar">
+              <div class="powerstat-fill" style="width: {{ hero.intelligence }}%; background: linear-gradient(90deg, #3b82f6, #60a5fa);"></div>
+            </div>
+          </div>
+          {% endif %}
+          
+          {% if hero.strength %}
+          <div class="powerstat-item">
+            <div class="powerstat-header">
+              <span class="powerstat-label">Strength</span>
+              <span class="powerstat-value">{{ hero.strength }}</span>
+            </div>
+            <div class="powerstat-bar">
+              <div class="powerstat-fill" style="width: {{ hero.strength }}%; background: linear-gradient(90deg, #ef4444, #f87171);"></div>
+            </div>
+          </div>
+          {% endif %}
+          
+          {% if hero.speed %}
+          <div class="powerstat-item">
+            <div class="powerstat-header">
+              <span class="powerstat-label">Speed</span>
+              <span class="powerstat-value">{{ hero.speed }}</span>
+            </div>
+            <div class="powerstat-bar">
+              <div class="powerstat-fill" style="width: {{ hero.speed }}%; background: linear-gradient(90deg, #10b981, #34d399);"></div>
+            </div>
+          </div>
+          {% endif %}
+          
+          {% if hero.durability %}
+          <div class="powerstat-item">
+            <div class="powerstat-header">
+              <span class="powerstat-label">Durability</span>
+              <span class="powerstat-value">{{ hero.durability }}</span>
+            </div>
+            <div class="powerstat-bar">
+              <div class="powerstat-fill" style="width: {{ hero.durability }}%; background: linear-gradient(90deg, #f59e0b, #fbbf24);"></div>
+            </div>
+          </div>
+          {% endif %}
+          
+          {% if hero.power %}
+          <div class="powerstat-item">
+            <div class="powerstat-header">
+              <span class="powerstat-label">Power</span>
+              <span class="powerstat-value">{{ hero.power }}</span>
+            </div>
+            <div class="powerstat-bar">
+              <div class="powerstat-fill" style="width: {{ hero.power }}%; background: linear-gradient(90deg, #8b5cf6, #a78bfa);"></div>
+            </div>
+          </div>
+          {% endif %}
+          
+          {% if hero.combat %}
+          <div class="powerstat-item">
+            <div class="powerstat-header">
+              <span class="powerstat-label">Combat</span>
+              <span class="powerstat-value">{{ hero.combat }}</span>
+            </div>
+            <div class="powerstat-bar">
+              <div class="powerstat-fill" style="width: {{ hero.combat }}%; background: linear-gradient(90deg, #ec4899, #f472b6);"></div>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}
