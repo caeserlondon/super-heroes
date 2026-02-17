@@ -1,9 +1,28 @@
-.venv/
+
+# --- Environment Variables & Secrets ---
 .env
-*.pyc
-__pycache__/
-.superhero_cache.json
+.env.*
+!.env.example
+
+# --- Database & Storage ---
+*.sqlite3
+*.db
 db.sqlite3
 staticfiles/
-DEPLOY.md
+
+# --- Project Specific & Cache ---
+.superhero_cache.json
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# --- Deployment (e.g., Render/Heroku) ---
 render.yaml
+DEPLOY.md
+
+# --- OS & IDE Specific ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp

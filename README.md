@@ -41,11 +41,8 @@ Open [http://127.0.0.1:8000/](http://127.0.0.1:8000/) in your browser. The first
 
 ## Deploy online (free)
 
-To host the app and share a link (e.g. with the company), see **[DEPLOY.md](DEPLOY.md)**. Recommended free options:
-
-- **Render** – Connect GitHub, add env vars, deploy. Free tier; app may sleep after 15 min idle.
-- **PythonAnywhere** – Django-friendly free tier; URL like `yourusername.pythonanywhere.com`.
-- **Railway** – Free credit per month; simple GitHub deploy.
+- **PythonAnywhere (no card required):** see **[PYTHONANYWHERE.md](PYTHONANYWHERE.md)** for step-by-step deploy. Your link will be `https://yourusername.pythonanywhere.com`.
+- Other options (Render, Railway, etc.): see [DEPLOY.md](DEPLOY.md).
 
 ## Project layout
 
