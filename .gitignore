@@ -10,11 +10,21 @@
 db.sqlite3
 staticfiles/
 
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+*.egg
+
 # --- Project Specific & Cache ---
 .superhero_cache.json
 .pytest_cache/
 .ruff_cache/
 .mypy_cache/
+.coverage
 
 # --- Deployment (e.g., Render/Heroku) ---
 render.yaml
