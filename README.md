@@ -2,23 +2,90 @@
 
 A small Python project that integrates with the [Superhero API](https://superheroapi.com/), caches responses, and provides a Django UI to browse superheroes and their appearance details.
 
+**Architecture:** Django app that talks to the Superhero API via a reusable `superhero_api` client; the client uses a cache layer (Django’s cache in the web app, or an optional file cache elsewhere) so repeated requests don’t hit the API unnecessarily.
+
 ### [Live on https://caeserlondon.pythonanywhere.com/](https://caeserlondon.pythonanywhere.com)
+
+---
+
+## Tests and coverage
+
+Tests are written with **pytest** and **pytest-django**. The suite includes **unit tests** (client, cache, views with mocks) and **integration tests** (`tests/test_integration.py`): full stack (view → real client → real Django cache) with only external HTTP (CDN) mocked. Coverage includes the Django app (`heroes`), the API client package (`superhero_api`), and project config (`config`).
+
+**Run all tests**
+
+```bash
+source .venv/bin/activate
+pytest tests/ -v
+```
+
+**Run tests with coverage (terminal report)**
+
+```bash
+pytest tests/ --cov=heroes --cov=superhero_api --cov=config --cov-report=term-missing
+```
+
+**Generate HTML coverage report**
+
+```bash
+pytest tests/ --cov=heroes --cov=superhero_api --cov=config --cov-report=html
+```
+
+This creates a `htmlcov/` folder. **Open `htmlcov/index.html` in your browser** to view the interactive coverage report (per-file coverage, line highlighting, and missing lines).
+
+The `htmlcov/` folder is committed in this repo so reviewers can open the report without running pytest.
+
+---
+
+**Health check:** [http://127.0.0.1:8000/health/](http://127.0.0.1:8000/health/) returns `{"status": "ok"}` for load balancers and monitoring.
+
+---
+
+## CI (GitHub Actions)
+
+On every push (and pull request) to `main` or `master`, GitHub Actions runs the test suite with coverage. Check the **Actions** tab on the repo to see that tests run automatically.
+
+---
+
+|              Test files              |               Test classes               |
+| :----------------------------------: | :--------------------------------------: |
+| ![Test files](static/test-files.png) | ![Test classes](static/test-classes.png) |
+
+---
 
 ## Features
 
-- **API integration**: Fetches superhero data (name and appearance) from the Superhero API. If `SUPERHERO_API_TOKEN` is not set, the app falls back to the same dataset from [akabab/superhero-api](https://github.com/akabab/superhero-api) so it runs without a token.
-- **Caching**: Django’s built-in cache framework (`django.core.cache`) stores API responses so repeated list/detail views do not hit the API unnecessarily. Default backend is in-memory; you can switch to Redis, Memcached, or database cache in `config/settings.py`.
-- **Django UI**:
-  - List view of superheroes with thumbnails.
-  - Detail view per hero showing appearance: image, gender, race, height, weight, eye colour, hair colour.
-- **Images**: Uses the alternative image source (`cdn.jsdelivr.net/gh/akabab/superhero-api@0.3.0/api/images/...`) because the API’s image URLs are protected by Cloudflare. Format: `[hero_id]-[hero-name].jpg` (lowercase, spaces as hyphens).
+- **API integration**: Fetches superhero data (name, appearance, biography, powerstats) from the Superhero API. If `SUPERHERO_API_TOKEN` is not set, the app falls back to the same dataset from [akabab/superhero-api](https://github.com/akabab/superhero-api) so it runs without a token.
+- **Caching**: Django’s built-in cache stores API responses so repeated list/detail views do not hit the API unnecessarily. Default backend is in-memory; you can switch to Redis, Memcached, or database cache in `config/settings.py`.
+- **Django UI**: List view of superheroes with thumbnails; detail view per hero (appearance, biography, powerstats). Images use the CDN (`cdn.jsdelivr.net/...`) to avoid Cloudflare blocking.
+- **Health endpoint**: `/health/` returns JSON for monitoring.
+- **Request logging**: Middleware logs method, path, status code, and duration for each request.
 
-## Setup
+---
+
+## Project layout
+
+- **`config/`** – Django settings, root URLs, WSGI, request-logging middleware.
+- **`heroes/`** – Django app: views (list, detail, favicon, health), URLs, templates, Django cache adapter for the API client.
+- **`superhero_api/`** – Reusable package: API client (`client.py`), optional file cache (`cache.py`). Used by the web app with the Django cache adapter.
+- **`tests/`** – Pytest test suite: unit tests (client, cache, views, Django cache adapter) and integration tests (full stack, CDN mocked).
+
+---
+
+## Design notes
+
+- **Cache**: The Django app uses Django’s cache via `heroes/superhero_cache.py`.
+- **Fallback**: When no token is set, the client fetches `all.json` from the akabab CDN, normalises it to the same shape as the API, and caches it.
+- **Images**: All image URLs are built with `hero_image_url(id, name)` using the CDN and slug format.
+
+---
+
+## Run the app
 
 1. **Clone and enter the project**
 
    ```bash
-   cd super-heroes
+   cd super-heros
    ```
 
 2. **Create a virtual environment and install dependencies**
@@ -29,30 +96,13 @@ A small Python project that integrates with the [Superhero API](https://superher
    pip install -r requirements.txt
    ```
 
-3. **Superhero API token**  
-   For the official API, get a token at [superheroapi.com](https://superheroapi.com/) (GitHub login). Then either:
-   - Create a `.env` file in the project root (copy from `.env.example`) and set `SUPERHERO_API_TOKEN=your-token`, or
-   - Run `export SUPERHERO_API_TOKEN=your-token` in your shell.  
-     Without a token, the app uses the fallback dataset and still works.
+3. **Optional: Superhero API token**  
+   For the official API, get a token at [superheroapi.com](https://superheroapi.com/) (GitHub login). Set `SUPERHERO_API_TOKEN=your-token` in a `.env` file or in your shell. Without a token, the app uses a fallback dataset and still works.
 
-## Run
+4. **Start the server**
 
-```bash
-python manage.py runserver
-```
+   ```bash
+   python manage.py runserver
+   ```
 
-Open [http://127.0.0.1:8000/](http://127.0.0.1:8000/) in your browser. The first load may take a few seconds while data is fetched and cached; later requests are served from the cache.
-
-- **`superhero_api/`** – API client (and optional file cache for non-Django use):
-  - `client.py`: `SuperheroAPIClient` (list, character, appearance, biography, powerstats) and `hero_image_url()`.
-  - `cache.py`: Optional JSON file cache used only if no cache is passed to the client (e.g. in scripts).
-- **`heroes/superhero_cache.py`** – Django cache adapter used by the app so the client uses `django.core.cache`.
-- **`config/`** – Django settings and URLs.
-- **`heroes/`** – Django app: views, URLs, templates for list and detail.
-- **Cache**: Configured in `config/settings.py` under `CACHES`; by default in-memory. Hero list and per-character data are stored with a 24-hour timeout.
-
-## Design notes
-
-- **Cache**: The Django app uses Django’s cache (see `heroes/superhero_cache.py`). You can change the backend in `CACHES` (e.g. Redis or database) so cache survives restarts.
-- **Fallback**: When no token is set, the client fetches `all.json` from the akabab CDN (same data source as the challenge’s image backup), normalises it to the same shape as the API, and caches it. This keeps the app runnable for demos without a token.
-- **Images**: All image URLs are built with `hero_image_url(id, name)` using the CDN and slug format to avoid Cloudflare blocking.
+   Open [http://127.0.0.1:8000/](http://127.0.0.1:8000/). The first load may take a few seconds while data is fetched and cached; later requests are served from the cache.
