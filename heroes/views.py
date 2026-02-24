@@ -4,17 +4,25 @@ Views for the Super Heroes UI.
 All data is fetched via the superhero_api client, which uses the cache layer
 so repeated requests do not hit the API unnecessarily.
 """
+import logging
 from pathlib import Path
 
-from django.http import FileResponse, Http404
+from django.http import FileResponse, Http404, JsonResponse
 from django.shortcuts import render
 
 from superhero_api import SuperheroAPIClient, hero_image_url
 
 from heroes.superhero_cache import get_superhero_cache
 
+logger = logging.getLogger(__name__)
+
 # Favicon path (works even when static files aren't collected)
 FAVICON_PATH = Path(__file__).resolve().parent / "static" / "heroes" / "favicon.png"
+
+
+def health(request):
+    """Health check for load balancers and monitoring. Returns 200 when the app is up."""
+    return JsonResponse({"status": "ok"})
 
 
 def favicon(request):

@@ -35,6 +35,7 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "config.middleware.RequestLoggingMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -52,7 +53,15 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
+# Use in-memory sqlite when running tests (pytest sets PYTEST_CURRENT_TEST)
 DATABASES = {}
+if __import__("os").environ.get("PYTEST_CURRENT_TEST"):
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": ":memory:",
+        }
+    }
 
 LANGUAGE_CODE = "en-gb"
 TIME_ZONE = "UTC"
