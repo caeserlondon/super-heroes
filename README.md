@@ -10,6 +10,8 @@ A small Python project that integrates with the [Superhero API](https://superher
 
 ## Tests and coverage
 
+**98% coverage on critical paths (API, cache, views)**
+
 Tests are written with **pytest** and **pytest-django**. The suite includes **unit tests** (client, cache, views with mocks) and **integration tests** (`tests/test_integration.py`): full stack (view → real client → real Django cache) with only external HTTP (CDN) mocked. Coverage includes the Django app (`heroes`), the API client package (`superhero_api`), and project config (`config`).
 
 **Run all tests**
