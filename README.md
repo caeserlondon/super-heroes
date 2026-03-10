@@ -1,4 +1,10 @@
-# Super Heroes – Defaqto Technical Challenge
+# Super Heroes
+
+|              Landing Page              |               Hero Page               |
+| :------------------------------------: | :-----------------------------------: |
+| ![Test files](static/landing-page.png) | ![Test classes](static/hero-page.png) |
+
+---
 
 A small Python project that integrates with the [Superhero API](https://superheroapi.com/), caches responses, and provides a Django UI to browse superheroes and their appearance details.
 
